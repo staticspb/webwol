@@ -1,0 +1,26 @@
+# Configure variables to fit your setup
+# * endpoint:	Base URL of main PHP script
+# * apikey:		API key added by "add_api_key.sh"
+# * mac: 		MAC address of computer to wake up
+# * action: 	Action used to read and clear WoL request indication variable
+# * name: 		Name of variable to store WoL request indication
+# * value: 		String used to indicate WoL request
+# * interface: 	Your main network interface name
+# 
+# Make sure to use same "value" for requests as configured in this script
+# Add this script to router's scheduler for desired interval
+
+:local endpoint "https://api.endpoint.url"
+:local apikey "API key"
+:local mac "01:02:03:04:05:06"
+:local action "cut"
+:local name "webwol"
+:local value "send_magic_packet"
+:local interface "bridge"
+
+:local result ([/tool fetch url="$endpoint/?api_key=$apikey&action=$action&name=$name" as-value output=user]->"data")
+
+if ($result = "{\"result\":200,\"body\":\"$value\"}") do={
+	:log info "WebWoL request received, sending magic packet to $mac..."
+	/tool wol mac=$mac interface=$interface
+}
